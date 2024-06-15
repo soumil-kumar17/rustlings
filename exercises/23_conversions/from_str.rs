@@ -31,23 +31,39 @@ enum ParsePersonError {
     ParseInt(ParseIntError),
 }
 
-// I AM NOT DONE
-
-// Steps:
-// 1. If the length of the provided string is 0, an error should be returned
-// 2. Split the given string on the commas present in it
-// 3. Only 2 elements should be returned from the split, otherwise return an
-//    error
-// 4. Extract the first element from the split operation and use it as the name
-// 5. Extract the other element from the split operation and parse it into a
-//    `usize` as the age with something like `"4".parse::<usize>()`
-// 6. If while extracting the name and the age something goes wrong, an error
-//    should be returned
-// If everything goes well, then return a Result of a Person object
-
 impl FromStr for Person {
     type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.is_empty() {
+            return Err(ParsePersonError::Empty);
+        }
+
+        let mut parts = s.split(',');
+        let parts: Vec<&str> = parts.collect();
+
+        if parts.len() != 2 {
+            return Err(ParsePersonError::BadLen);
+        }
+
+        let name = parts[0];
+        let age_str = parts[1];
+
+        if name.is_empty() {
+            return Err(ParsePersonError::NoName);
+        }
+
+        let age: usize = age_str.parse()?;
+
+        Ok(Person {
+            name: name.to_string(),
+            age,
+        })
+    }
+}
+
+impl From<ParseIntError> for ParsePersonError {
+    fn from(err: ParseIntError) -> ParsePersonError {
+        ParsePersonError::ParseInt(err)
     }
 }
 
